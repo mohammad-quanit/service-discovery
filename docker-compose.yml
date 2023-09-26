@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  consul:
+    image: consul:1.15.4
+    ports:
+      - "8500:8500"
+    networks:
+      - sd-network
+
+  helloworld-server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    image: helloworld-server:1.0
+    environment:
+      - CONSUL_HTTP_ADDR=consul:8500
+    depends_on:
+      - consul
+    networks:
+      - sd-network
+
+  helloworld-client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    image: helloworld-client:1.0
+    environment:
+      - CONSUL_HTTP_ADDR=consul:8500
+    depends_on:
+      - consul
+      - helloworld-server
+    networks:
+      - sd-network
+
+networks:
+  sd-network:
+    driver: bridge
